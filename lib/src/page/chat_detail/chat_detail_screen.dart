@@ -85,11 +85,38 @@ class ChatDetailScreen extends StatefulWidget {
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
 
-class _ChatDetailScreenState extends State<ChatDetailScreen> {
+class _ChatDetailScreenState extends State<ChatDetailScreen> with WidgetsBindingObserver {
   final ScrollController? messageListScrollController = ScrollController();
   late final IOWebSocketChannel channel;
 
   bool typing = false;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Ứng dụng đã trở lại từ trạng thái nền
+      if(channel.closeCode!=null){
+        try {
+          channel = IOWebSocketChannel.connect(
+            Uri.parse('wss://' +
+                widget.data.cluseterID +
+                '.piesocket.com/v3/' +
+                widget.data.groupName +
+                '?api_key=' +
+                widget.data.apiKey +
+                '&notify_self=1'),
+          );
+
+          print('Connect socket');
+          connectWebsocket();
+        } catch (e) {
+          print('Error when connect socket');
+          print(e);
+        }
+      }
+      // Thực hiện các tác vụ cần thiết ở đây
+    }
+  }
 
   @override
   void initState() {
